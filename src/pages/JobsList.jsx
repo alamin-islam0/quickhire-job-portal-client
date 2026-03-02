@@ -110,7 +110,7 @@ export default function JobsList() {
         </Container>
       </section>
 
-      <section className="border-y border-[#eceef5] bg-[#f8f9fc] py-10">
+      <section className="border-y border-[#ffffff] bg-[#ffffff] py-10">
         <Container>
           <p className="text-[18px] text-[#8b91a9]">Companies we helped grow</p>
           <div className="mt-6 grid grid-cols-2 place-items-center gap-6 md:grid-cols-5">
