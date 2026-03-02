@@ -127,9 +127,13 @@ export default function Admin() {
           <section className="rounded-2xl border border-[#dce0ee] bg-white p-5 shadow-[0_12px_34px_rgba(37,50,75,0.06)] sm:p-6">
             <h2 className="text-xl font-semibold text-[#25324b]">Admin Access</h2>
             <p className="mt-1 text-sm text-[#6e7390]">Provide the admin token to unlock protected actions.</p>
+            <p className="mt-2 rounded-md border border-[#dce0ee] bg-[#f7f9ff] px-3 py-2 text-xs font-medium text-[#4640de]">
+              ADMIN_TOKEN=quickhire_admin_2026_secure
+            </p>
 
             <div className="mt-5">
               <Input
+              className='border-[#4640de] border'
                 label="Admin Token"
                 type="password"
                 placeholder="Enter admin token"
