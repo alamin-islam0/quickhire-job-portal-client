@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react';
 import { ArrowRight, ChevronDown, MapPin, Search } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Footer from '../components/layout/Footer';
@@ -35,8 +36,22 @@ const getShortLabel = (value = '') => value.split(' ').slice(0, 2).map((chunk) =
 
 export default function JobsList() {
   const { jobs, loading, error, filters, locations, updateFilter } = useJobs();
+  const [isSearchPanelOpen, setIsSearchPanelOpen] = useState(false);
+  const searchPanelRef = useRef(null);
   const featuredJobs = jobs.slice(0, 8);
   const latestJobs = jobs.slice(0, 8);
+  const searchResults = jobs.slice(0, 5);
+
+  useEffect(() => {
+    const handleOutsideClick = (event) => {
+      if (!searchPanelRef.current?.contains(event.target)) {
+        setIsSearchPanelOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleOutsideClick);
+    return () => document.removeEventListener('mousedown', handleOutsideClick);
+  }, []);
 
   return (
     <div className="bg-[#f3f4f8]">
@@ -64,36 +79,72 @@ export default function JobsList() {
                 Great platform for the job seeker that searching for new career heights and passionate about startups.
               </p>
 
-              <div className="relative z-20 mt-5 flex flex-col gap-0 rounded-none border border-[#dce0ee] bg-white p-1 shadow-[0_18px_40px_rgba(58,66,119,0.08)] sm:mt-8 sm:p-2 sm:flex-row sm:items-center sm:gap-0 lg:w-[calc(100%+220px)]">
-                <div className="flex h-[48px] flex-1 items-center gap-3 px-4 sm:h-[58px] sm:px-5">
-                  <Search size={18} className="text-[#242b45]" />
-                  <input
-                    value={filters.search}
-                    onChange={(event) => updateFilter('search', event.target.value)}
-                    className="w-full border-0 bg-transparent text-[15px] text-[#4d546d] outline-none placeholder:text-[#a0a7be]"
-                    placeholder="Job title or keyword"
-                  />
+              <div ref={searchPanelRef} className="relative z-20 lg:w-[calc(100%+220px)]">
+                <div className="mt-5 flex flex-col gap-0 rounded-none border border-[#dce0ee] bg-white p-1 shadow-[0_18px_40px_rgba(58,66,119,0.08)] sm:mt-8 sm:p-2 sm:flex-row sm:items-center sm:gap-0">
+                  <div className="flex h-[48px] flex-1 items-center gap-3 px-4 sm:h-[58px] sm:px-5">
+                    <Search size={18} className="text-[#242b45]" />
+                    <input
+                      value={filters.search}
+                      onFocus={() => setIsSearchPanelOpen(true)}
+                      onChange={(event) => {
+                        updateFilter('search', event.target.value);
+                        setIsSearchPanelOpen(true);
+                      }}
+                      className="w-full border-0 bg-transparent text-[15px] text-[#4d546d] outline-none placeholder:text-[#a0a7be]"
+                      placeholder="Job title or keyword"
+                    />
+                  </div>
+                  <div className="mx-1 hidden h-9 w-[1px] bg-[#d8dced] sm:block" />
+                  <div className="flex h-[44px] items-center gap-3 border-t border-[#eceff7] px-4 sm:h-[58px] sm:border-t-0 sm:px-5 sm:w-[220px]">
+                    <MapPin size={17} className="text-[#242b45]" />
+                    <select
+                      value={filters.location}
+                      onChange={(event) => updateFilter('location', event.target.value)}
+                      className="w-full border-0 bg-transparent text-[15px] text-[#313952] outline-none"
+                    >
+                      <option value="">Florence, Italy</option>
+                      {locations.map((item) => (
+                        <option key={item} value={item}>
+                          {item}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown size={14} className="text-[#4b546d]" />
+                  </div>
+                  <button className="h-[42px] w-full rounded-none bg-[#4640de] px-6 text-[14px] font-semibold text-white transition hover:bg-[#3832ca] sm:h-[58px] sm:w-auto sm:px-8 sm:text-[16px]">
+                    Search my job
+                  </button>
                 </div>
-                <div className="mx-1 hidden h-9 w-[1px] bg-[#d8dced] sm:block" />
-                <div className="flex h-[44px] items-center gap-3 border-t border-[#eceff7] px-4 sm:h-[58px] sm:border-t-0 sm:px-5 sm:w-[220px]">
-                  <MapPin size={17} className="text-[#242b45]" />
-                  <select
-                    value={filters.location}
-                    onChange={(event) => updateFilter('location', event.target.value)}
-                    className="w-full border-0 bg-transparent text-[15px] text-[#313952] outline-none"
-                  >
-                    <option value="">Florence, Italy</option>
-                    {locations.map((item) => (
-                      <option key={item} value={item}>
-                        {item}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown size={14} className="text-[#4b546d]" />
-                </div>
-                <button className="h-[42px] w-full rounded-none bg-[#4640de] px-6 text-[14px] font-semibold text-white transition hover:bg-[#3832ca] sm:h-[58px] sm:w-auto sm:px-8 sm:text-[16px]">
-                  Search my job
-                </button>
+
+                {isSearchPanelOpen && filters.search.trim() ? (
+                  <div className="absolute left-0 right-0 top-[calc(100%+8px)] rounded-none border border-[#dce0ee] bg-white p-2 shadow-[0_18px_35px_rgba(37,50,75,0.16)]">
+                    {loading ? (
+                      <p className="px-3 py-2 text-sm text-[#6e7390]">Searching jobs...</p>
+                    ) : null}
+
+                    {!loading && searchResults.length === 0 ? (
+                      <p className="px-3 py-2 text-sm text-[#6e7390]">No jobs found for this keyword.</p>
+                    ) : null}
+
+                    {!loading && searchResults.length > 0 ? (
+                      <div className="space-y-2">
+                        {searchResults.map((job) => (
+                          <Link
+                            key={job._id}
+                            to={`/jobs/${job._id}`}
+                            onClick={() => setIsSearchPanelOpen(false)}
+                            className="block rounded-md border border-[#e7eaf4] bg-[#f9faff] px-3 py-2 transition hover:border-[#4640de] hover:bg-[#f1f3ff]"
+                          >
+                            <p className="text-sm font-semibold text-[#25324b]">{job.title}</p>
+                            <p className="text-xs text-[#6e7390]">
+                              {job.company} • {job.location} • {job.category}
+                            </p>
+                          </Link>
+                        ))}
+                      </div>
+                    ) : null}
+                  </div>
+                ) : null}
               </div>
 
               <p className="mt-3 text-[11px] text-[#7a8199] sm:mt-4 sm:text-[14px]">
